@@ -94,7 +94,7 @@ En este repositorio, los ingenieros glitcheados utilizaron el **método de Euler
 
 Una vez que comprendas el código, realiza las siguientes tareas:
 
-* **Encuentra** y **corrige** todos los errores (físicos, numéricos, de programación) del módulo `physics/solver`. Documenta el proceso de debugging en el archivo `ENTREGA.md`, **justificando:**
+* **Encuentra y corrige** todos los errores (físicos, numéricos, de programación) del módulo `physics/solver`. Documenta el proceso de debugging en el archivo `ENTREGA.md`, **justificando:**
 
   * cada error que encuentres,
   * cómo lo identificaste,
@@ -105,7 +105,7 @@ Una vez que comprendas el código, realiza las siguientes tareas:
 * **Verifica y valida** el simulador:
 
   * Investiga requisitos realistas de precisión para aterrizaje en Marte (referencias actuales: misión Perseverance, misiones humanas).
-  * Utiliza las efemérides `2028-12-31_00-00-00.csv` como estado inicial del sistema solar. Determina el time step óptimo, validando tus resultados contra las efemérides de referencia `2029-08-28_00_00_00.csv`. Escribe el código en el módulo `physics/mission`.
+  * Utiliza las efemérides `2028-12-31_00-00-00.csv` como estado inicial del sistema solar. Determina el tipo de datos numérico (precisión de punto flotante) y el time step óptimo, validando tus resultados contra las efemérides de referencia `2029-08-28_00_00_00.csv`. Implementa el código correspondiente en el módulo `physics/mission`.
   * Opcional (con bonus points): Investiga y compara métodos de integración numérica avanzados (RK4, Adams-Bashforth, symplectic, etc.). Elige y justifica el más adecuado para este problema.
   * Documenta todo en `ENTREGA.md`.
 
@@ -121,7 +121,7 @@ Una vez que comprendas el código, realiza las siguientes tareas:
 
   * Implementa tu misión en el módulo `physics/mission`.
   * Lanza alrededor del 31 de diciembre de 2028.
-  * Calcula y aplica un impulso TMI (Trans-Mars Injection) realista (~3 - 5 km/s), es decir, un cambio de velocidad que coloca la nave en una trayectoria de transferencia hacia Marte.
+  * Calcula y aplica un impulso TMI (Trans-Mars Injection) realista (~3 - 5 km/s), es decir, un cambio de velocidad Δv que coloca la nave en una trayectoria de transferencia hacia Marte.
   * Simula el viaje interplanetario. Si resulta necesario, realiza correcciones de trayectoria de medio curso (no más de 100 m/s en total). Considera ajustar el time step en función de cada etapa de la misión.
   * Aplica un impulso MOI (Mars Orbit Insertion) para capturar la nave en órbita elíptica → idealmente circular (~0.8–1.5 km/s).
   * Documenta en `ENTREGA.md`:
@@ -134,8 +134,8 @@ Una vez que comprendas el código, realiza las siguientes tareas:
 ## Recomendaciones
 
 * Los ingenieros glitcheados utilizaron el estilo de programación [Google C++](https://google.github.io/styleguide/cppguide.html) con comentarios en estilo [Doxygen](https://www.doxygen.nl/manual/docblocks.html). Úsalos tú también.
-* Usa Git. Si necesitas ayuda: [Learn GitHub within GitHub](https://learn.github.com/skills)
-* No modifiques los archivos `main` ni `renderer`.
+* Usa **Git** y commitea de forma frecuente y con mensajes claros. Si necesitas ayuda: [Learn GitHub within GitHub](https://learn.github.com/skills)
+* No modifiques los archivos `sim_visualizer.c`, `sim_headless.c` ni la carpeta `renderer/`.
 * No modifiques los archivos de efemérides.
 * Antes de consultar a los ayudantes, consulta a [ChatGPT](https://chatgpt.com/), [Gemini](https://gemini.google.com/), [Claude](https://claude.ai/), [Grok](https://grok.com/), etc. ¡Te lo agradecerán!
 
