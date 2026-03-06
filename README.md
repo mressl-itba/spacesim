@@ -134,7 +134,7 @@ Una vez que comprendas el código, realiza las siguientes tareas:
 
 ## Recomendaciones
 
-* Los ingenieros glitcheados utilizaron el estilo de programación [Google C++](https://google.github.io/styleguide/cppguide.html) con comentarios en estilo [Doxygen](https://www.doxygen.nl/manual/docblocks.html). Úsalos tú también.
+* Los ingenieros glitcheados utilizaron el estilo de programación [Google C++](https://google.github.io/styleguide/cppguide.html) con comentarios [Doxygen](https://www.doxygen.nl/manual/docblocks.html). Úsalos tú también.
 * Usa **Git** y commitea de forma frecuente y con mensajes claros. Si necesitas ayuda: [Learn GitHub within GitHub](https://learn.github.com/skills)
 * No modifiques los archivos `sim_visualizer.c`, `sim_headless.c` ni la carpeta `renderer/`.
 * No modifiques los archivos de efemérides.
