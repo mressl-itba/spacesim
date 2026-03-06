@@ -135,7 +135,7 @@ Una vez que comprendas el código, realiza las siguientes tareas:
 
 * Los ingenieros glitcheados utilizaron el estilo de programación [Google C++](https://google.github.io/styleguide/cppguide.html) con comentarios en estilo [Doxygen](https://www.doxygen.nl/manual/docblocks.html). Úsalos tú también.
 * Usa Git. Si necesitas ayuda: [Learn GitHub within GitHub](https://learn.github.com/skills)
-* No modifiques los archivos `main` ni el código en `renderer`.
+* No modifiques los archivos `main` ni `renderer`.
 * No modifiques los archivos de efemérides.
 * Antes de consultar a los ayudantes, consulta a [ChatGPT](https://chatgpt.com/), [Gemini](https://gemini.google.com/), [Claude](https://claude.ai/), [Grok](https://grok.com/), etc. ¡Te lo agradecerán!
 
