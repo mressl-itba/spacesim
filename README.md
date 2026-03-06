@@ -20,7 +20,7 @@ Año 2028. Un misterioso glitch cuántico ha borrado del mapa a **todos** los in
 
 3. Instala [vcpkg](https://vcpkg.io/) (gestor de paquetes de C++).
 
-    **En Windows:**
+    **Windows**
 
     ``` bash
     mkdir C:\dev
@@ -30,7 +30,7 @@ Año 2028. Un misterioso glitch cuántico ha borrado del mapa a **todos** los in
     .\vcpkg\vcpkg integrate install
     ```
 
-    **En Linux/macOS:**
+    **Linux/macOS**
 
     ``` bash
     mkdir ~/dev
