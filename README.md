@@ -105,7 +105,7 @@ Una vez que comprendas el código, realiza las siguientes tareas:
 * **Verifica y valida** el simulador:
 
   * Investiga requisitos realistas de precisión para aterrizaje en Marte (referencias actuales: misión Perseverance, misiones humanas).
-  * Utiliza las efemérides `2028-12-31_00-00-00.csv` como estado inicial del sistema solar. Determina el tipo de datos numérico (precisión de punto flotante) y el time step óptimo, validando tus resultados contra las efemérides de referencia `2029-08-28_00_00_00.csv`. Considera sólo el Sol, los ocho planetas y la Luna. Implementa el código correspondiente en el módulo `physics/mission`.
+  * Utiliza las efemérides `2028-12-31_00-00-00.csv` como estado inicial del sistema solar. Determina el tipo de datos numérico más adecuado (precisión de punto flotante) y el time step óptimo, validando tus resultados contra las efemérides de referencia `2029-08-28_00_00_00.csv`. Considera sólo el Sol, los ocho planetas y la Luna. Implementa el código correspondiente en el módulo `physics/mission`.
   * Opcional (con bonus points): Investiga y compara métodos de integración numérica avanzados (RK4, Adams-Bashforth, symplectic, etc.). Elige y justifica el más adecuado para este problema.
   * Documenta todo en `ENTREGA.md`.
 
