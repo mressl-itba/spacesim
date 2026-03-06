@@ -74,8 +74,6 @@ $$
 
 Para conocer cómo cambian las posiciones y velocidades con el tiempo, debemos resolver el siguiente sistema de ecuaciones diferenciales ordinarias (EDOs) de primer orden:
 
-Para obtener la evolución temporal de las posiciones y velocidades, debemos integrar la aceleración dos veces:
-
 $$
 \frac{d \mathbf{v}_i}{dt} = \mathbf{a}_i(\mathbf{r}_1, \dots, \mathbf{r}_N) \qquad \text{(ecuación del movimiento)}
 $$
