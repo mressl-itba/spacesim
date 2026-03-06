@@ -122,8 +122,9 @@ Una vez que comprendas el código, realiza las siguientes tareas:
   * Implementa tu misión en el módulo `physics/mission`.
   * Lanza alrededor del 31 de diciembre de 2028.
   * Calcula y aplica un impulso TMI (Trans-Mars Injection) realista (~3 - 5 km/s), es decir, un cambio de velocidad Δv que coloca la nave en una trayectoria de transferencia hacia Marte.
-  * Simula el viaje interplanetario. Si resulta necesario, realiza correcciones de trayectoria de medio curso (no más de 100 m/s en total). Considera ajustar el time step en función de cada etapa de la misión.
+  * Simula el viaje interplanetario. Si resulta necesario, realiza correcciones de trayectoria de medio curso (no más de 100 m/s en total).
   * Aplica un impulso MOI (Mars Orbit Insertion) para capturar la nave en órbita elíptica → idealmente circular (~0.8–1.5 km/s).
+  * Considera ajustar el time step en función de cada etapa de la misión.
   * Documenta en `ENTREGA.md`:
   
     * Δv total empleado
