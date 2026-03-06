@@ -13,7 +13,7 @@
 
 #define FONT_SIZE 20
 
-void DrawOrbitalHUD(bool paused, double time, const char *speed_label, const char *velocity_label)
+void DrawOrbitalHUD(bool paused, bool following_ship, double time, const char *speed_label, float camera_velocity_magnitude)
 {
     // Get effective simulation time for display
     time_t sim_time = (time_t)time;
@@ -34,22 +34,22 @@ void DrawOrbitalHUD(bool paused, double time, const char *speed_label, const cha
 
     // Keyboard controls
     DrawText("WASDQE: navigate", 10, text_top + FONT_SIZE * 0, FONT_SIZE, WHITE);
-    DrawText("JK: time speed", 10, text_top + FONT_SIZE * 1, FONT_SIZE, WHITE);
-    DrawText("SPACE: pause/resume", 10, text_top + FONT_SIZE * 2, FONT_SIZE, WHITE);
-    DrawText("ENTER: single step (when paused)", 10, text_top + FONT_SIZE * 3, FONT_SIZE, WHITE);
-    DrawText("WHEEL: camera velocity", 10, text_top + FONT_SIZE * 4, FONT_SIZE, WHITE);
+    DrawText("IM/WHEEL: camera velocity", 10, text_top + FONT_SIZE * 1, FONT_SIZE, WHITE);
+    DrawText("JK: time speed", 10, text_top + FONT_SIZE * 2, FONT_SIZE, WHITE);
+    DrawText("SPACE: pause/resume", 10, text_top + FONT_SIZE * 3, FONT_SIZE, WHITE);
+    DrawText("ENTER: single step (when paused)", 10, text_top + FONT_SIZE * 4, FONT_SIZE, WHITE);
     DrawText("F: toggle ship follow", 10, text_top + FONT_SIZE * 5, FONT_SIZE, WHITE);
     DrawText("F11: toggle fullscreen", 10, text_top + FONT_SIZE * 6, FONT_SIZE, WHITE);
 
     // Status information
-    DrawText(paused ? "PAUSED" : "RUNNING",
+    DrawText(TextFormat("%s%s", paused ? "PAUSED" : "RUNNING", following_ship ? " | FOLLOWING SHIP" : ""),
              10, text_bottom - FONT_SIZE * 5, FONT_SIZE, activity_color);
+    DrawText(TextFormat("Velocity: %.2e m/s", camera_velocity_magnitude),
+             10, text_bottom - FONT_SIZE * 2, FONT_SIZE, activity_color);
     DrawText(TextFormat("Time: %04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, minute, second),
              10, text_bottom - FONT_SIZE * 4, FONT_SIZE, activity_color);
     DrawText(TextFormat("Time speed: %s", speed_label),
              10, text_bottom - FONT_SIZE * 3, FONT_SIZE, activity_color);
-    DrawText(TextFormat("Velocity: %s", velocity_label),
-             10, text_bottom - FONT_SIZE * 2, FONT_SIZE, activity_color);
     DrawText(TextFormat("FPS: %d", GetFPS()),
              10, text_bottom - FONT_SIZE * 1, FONT_SIZE, activity_color);
 }

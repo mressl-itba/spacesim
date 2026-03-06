@@ -25,132 +25,111 @@
 #define ROTATION_MOUSE_SENSITIVITY 2.0f  // Degrees per pixel for mouse rotation
 #define ROTATION_SMOOTHING_CONSTANT 0.2f // Time constant for smoothing rotation (seconds)
 
-OrbitalCamera *CreateOrbitalCamera(Vector3 position, Vector3 target)
+/**
+ * @brief Structure to hold the target position and rotation for the orbital camera, which will be smoothly interpolated towards.
+ */
+typedef struct
 {
-    OrbitalCamera *orbital_camera = new OrbitalCamera();
+    Vector3 position;
+    Vector2 rotation;
+} OrbitalCamera;
 
-    orbital_camera->camera = Camera3D{
-        position,
-        target,
-        Vector3{0.0f, 1.0f, 0.0f},
-        60.0f,
-        CAMERA_PERSPECTIVE};
-    orbital_camera->movement = Vector3{0.0f, 0.0f, 0.0f};
-    orbital_camera->rotation = Vector3{0.0f, 0.0f, 0.0f};
+static OrbitalCamera orbital_camera;
 
-    return orbital_camera;
+/**
+ * @brief Computes the pitch and yaw angles for the camera to look at a target position from a given camera position.
+ * 
+ * @param camera_position The current position of the camera in world space.
+ * @param camera_target The target position that the camera should look at in world space.
+ * 
+ * @return A Vector2 where x is the pitch angle (in degrees) and y is the yaw angle (in degrees) for the camera to look at the target.
+ */
+static Vector2 GetOrbitalRotation(Vector3 camera_position, Vector3 camera_target)
+{
+    Vector3 forward = Vector3Normalize(Vector3Subtract(camera_target, camera_position));
+
+    float pitch = -asinf(forward.y) * RAD2DEG;
+    float yaw = atan2f(forward.x, forward.z) * RAD2DEG;
+
+    return Vector2{pitch, yaw};
 }
 
-void DestroyOrbitalCamera(OrbitalCamera *orbital_camera)
+void SetOrbitalCameraPositionAndTarget(Vector3 camera_position, Vector3 camera_target)
 {
-    delete orbital_camera;
+    orbital_camera.position = camera_position;
+    orbital_camera.rotation = GetOrbitalRotation(camera_position, camera_target);
 }
 
-void SetOrbitalCameraPosition(OrbitalCamera *orbital_camera, Vector3 position, Vector3 target)
+Vector3 GetAbsoluteVelocity(Camera3D *camera, Vector3 relative_velocity)
 {
-    orbital_camera->camera.position = position;
-    orbital_camera->camera.target = target;
+    // Compute the camera's local axes
+    Vector3 forward = Vector3Normalize(Vector3Subtract(camera->target, camera->position));
+    Vector3 right = Vector3Normalize(Vector3CrossProduct(forward, camera->up));
+    Vector3 up = Vector3Normalize(Vector3CrossProduct(right, forward));
+
+    // Compute the absolute velocity in world space
+    Vector3 absolute_velocity = {0};
+
+    absolute_velocity = Vector3Add(absolute_velocity, Vector3Scale(forward, relative_velocity.z));
+    absolute_velocity = Vector3Add(absolute_velocity, Vector3Scale(right, relative_velocity.x));
+    absolute_velocity = Vector3Add(absolute_velocity, Vector3Scale(up, relative_velocity.y));
+
+    return absolute_velocity;
 }
 
-static void UpdateFreeCamera(Camera *camera, Vector3 movement, Vector3 rotation, float zoom)
+Quaternion GetCameraRotation(Camera3D *camera)
 {
-    // Compute current forward direction (full 3D, not flattened)
-    Vector3 forward = Vector3Normalize(
-        Vector3Subtract(camera->target, camera->position));
-
-    // Compute right vector from forward and up
-    Vector3 right = Vector3Normalize(
-        Vector3CrossProduct(forward, camera->up));
-
-    // Recompute orthonormal up (in case it drifted)
-    Vector3 up = Vector3Normalize(
-        Vector3CrossProduct(right, forward));
-
-    // Apply movement in full 3D view space
-    Vector3 moveDelta = {0};
-
-    moveDelta = Vector3Add(moveDelta, Vector3Scale(forward, movement.z));
-    moveDelta = Vector3Add(moveDelta, Vector3Scale(right, movement.x));
-    moveDelta = Vector3Add(moveDelta, Vector3Scale(up, movement.y));
-
-    camera->position = Vector3Add(camera->position, moveDelta);
-    camera->target = Vector3Add(camera->target, moveDelta);
-
-    // Apply rotation (yaw + pitch style)
-    if (rotation.x != 0 || rotation.y != 0 || rotation.z != 0)
-    {
-        Vector3 view = Vector3Subtract(camera->target, camera->position);
-
-        Matrix rot = MatrixMultiply(
-            MatrixRotate(up, rotation.y * DEG2RAD),
-            MatrixRotate(right, rotation.x * DEG2RAD));
-
-        view = Vector3Transform(view, rot);
-
-        camera->target = Vector3Add(camera->position, view);
-    }
-
-    // Apply zoom (move along forward vector)
-    if (zoom != 0.0f)
-    {
-        Vector3 zoomDelta = Vector3Scale(forward, zoom);
-        camera->position = Vector3Add(camera->position, zoomDelta);
-    }
+    Vector2 rotation = GetOrbitalRotation(camera->position, camera->target);
+    
+    return QuaternionFromEuler(rotation.x * DEG2RAD, rotation.y * DEG2RAD, 0.0f);
 }
 
-float GetFilterAlpha(float delta_time, float tau)
+void SetCameraRotation(Camera3D *camera, Quaternion rotation)
+{
+    // Compute the forward vector from the rotation
+    Vector3 direction = Vector3RotateByQuaternion(Vector3{0.0f, 0.0f, 1.0f}, rotation);
+
+    camera->target = Vector3Add(camera->position, direction);
+}
+
+/**
+ * @brief Computes the alpha value for an exponential smoothing filter based on the elapsed time and a time constant.
+ *
+ * @param delta_time Time elapsed since the last frame (in seconds).
+ *
+ * @param tau The time constant for the smoothing filter (in seconds). A smaller tau results in faster smoothing, while a larger tau results in slower smoothing.
+ */
+static float GetFilterAlpha(float delta_time, float tau)
 {
     float alpha = 1.0f - expf(-delta_time / tau);
 
     return fmin(alpha, 1.0f);
 }
 
-void UpdateOrbitalCamera(OrbitalCamera *orbital_camera, float delta_time, float render_velocity)
+void UpdateOrbitalCamera(Camera3D *camera, float delta_time, Vector3 position_delta, Vector2 rotation_delta)
 {
-    // Movement with WASD and QE
-    float movement_delta = render_velocity * delta_time;
-    if (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT))
-        movement_delta *= 2.0f; // Speed boost with Shift key
-    if (IsKeyDown(KEY_W))
-        orbital_camera->movement.z += movement_delta;
-    else if (IsKeyDown(KEY_S))
-        orbital_camera->movement.z -= movement_delta;
-    else if (IsKeyDown(KEY_A))
-        orbital_camera->movement.x -= movement_delta;
-    else if (IsKeyDown(KEY_D))
-        orbital_camera->movement.x += movement_delta;
-    else if (IsKeyDown(KEY_Q))
-        orbital_camera->movement.y -= movement_delta;
-    else if (IsKeyDown(KEY_E))
-        orbital_camera->movement.y += movement_delta;
+    // Get current camera position and rotation
+    Vector3 position = camera->position;
+    Quaternion rotation = GetCameraRotation(camera);
 
-    // Rotation with arrow keys
-    float key_rotation_speed = ROTATION_KEY_SENSITIVITY * delta_time;
-    if (IsKeyDown(KEY_UP))
-        orbital_camera->rotation.x += key_rotation_speed;
-    else if (IsKeyDown(KEY_DOWN))
-        orbital_camera->rotation.x -= key_rotation_speed;
-    else if (IsKeyDown(KEY_LEFT))
-        orbital_camera->rotation.y += key_rotation_speed;
-    else if (IsKeyDown(KEY_RIGHT))
-        orbital_camera->rotation.y -= key_rotation_speed;
+    // Update target position and rotation based on input
+    orbital_camera.position = Vector3Add(orbital_camera.position, position_delta);
+    orbital_camera.rotation = Vector2Add(orbital_camera.rotation, rotation_delta);
+    if (orbital_camera.rotation.x < -89.9f)
+        orbital_camera.rotation.x = -89.9f;
+    else if (orbital_camera.rotation.x > 89.9f)
+        orbital_camera.rotation.x = 89.9f;
 
-    // Rotation with mouse movement
-    Vector2 mouse_delta = GetMouseDelta();
-    float mouse_rotation_speed = ROTATION_MOUSE_SENSITIVITY * delta_time;
-    orbital_camera->rotation.x += -mouse_delta.y * mouse_rotation_speed;
-    orbital_camera->rotation.y += -mouse_delta.x * mouse_rotation_speed;
+    // Smooth position
+    float movement_alpha = GetFilterAlpha(delta_time, MOVEMENT_SMOOTHNESS_CONSTANT);
+    camera->position = Vector3Add(
+        Vector3Scale(position, 1.0f - movement_alpha),
+        Vector3Scale(orbital_camera.position, movement_alpha));
 
-    // Smooth movement
-    float alpha_movement = GetFilterAlpha(delta_time, MOVEMENT_SMOOTHNESS_CONSTANT);
-    Vector3 smooth_movement = Vector3Scale(orbital_camera->movement, alpha_movement);
-    orbital_camera->movement = Vector3Subtract(orbital_camera->movement, smooth_movement);
-
-    // Smooth velocity
-    float alpha_rotation = GetFilterAlpha(delta_time, ROTATION_SMOOTHING_CONSTANT);
-    Vector3 smooth_rotation = Vector3Scale(orbital_camera->rotation, alpha_rotation);
-    orbital_camera->rotation = Vector3Subtract(orbital_camera->rotation, smooth_rotation);
-
-    // Update camera position
-    UpdateFreeCamera(&orbital_camera->camera, smooth_movement, smooth_rotation, 0.0f);
+    // Smooth rotation
+    float rotation_alpha = GetFilterAlpha(delta_time, ROTATION_SMOOTHING_CONSTANT);
+    rotation = QuaternionSlerp(rotation,
+                               QuaternionFromEuler(orbital_camera.rotation.x * DEG2RAD, orbital_camera.rotation.y * DEG2RAD, 0.0f),
+                               rotation_alpha);
+    SetCameraRotation(camera, rotation);
 }

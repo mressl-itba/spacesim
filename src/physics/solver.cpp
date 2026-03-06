@@ -11,13 +11,14 @@
 #include <cmath>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "solver.h"
 
-#define G 6.67430e-11f // Gravitational constant (in m^3 kg^-1 s^-2)
+#define G 6.67430e-11 // Gravitational constant (in m^3 kg^-1 s^-2)
 
 OrbitalSim *CreateOrbitalSim(uint32_t num_bodies, double initial_time)
 {
@@ -25,7 +26,7 @@ OrbitalSim *CreateOrbitalSim(uint32_t num_bodies, double initial_time)
 
     sim->num_bodies = num_bodies;
     sim->bodies = new Body[num_bodies];
-    
+
     sim->time = initial_time;
 
     return sim;
@@ -38,6 +39,7 @@ OrbitalSim *CreateOrbitalSim(uint32_t num_bodies, double initial_time)
  * to extract the simulation epoch time.
  *
  * @param filepath Path to the file (may contain relative or absolute path components)
+ *
  * @return Unix epoch timestamp in seconds for the parsed time, or 0.0 if parsing fails
  */
 double ExtractEphemerisTimeFromFilename(const char *filepath)
@@ -46,8 +48,8 @@ double ExtractEphemerisTimeFromFilename(const char *filepath)
     std::string filepath_str(filepath);
     size_t last_sep = filepath_str.find_last_of("/\\");
     std::string filename = (last_sep != std::string::npos)
-        ? filepath_str.substr(last_sep + 1)
-        : filepath_str;
+                               ? filepath_str.substr(last_sep + 1)
+                               : filepath_str;
 
     // Parse the time from the filename (expected format: YYYY-MM-DD_HH-MM-SS.csv)
     std::tm tm_info = {};
@@ -111,7 +113,7 @@ OrbitalSim *CreateOrbitalSimFromFile(const char *filename)
             // Name
             // fields[0] ignored for simulation
 
-            // Mass
+            // Mass (kg)
             body.mass = stod(fields[1]);
 
             // Mean radius (convert from km to m)
@@ -158,16 +160,17 @@ void DestroyOrbitalSim(OrbitalSim *sim)
 
 void SimulateOrbitalSimStep(OrbitalSim *sim, float time_step)
 {
+    // Temporary workaround to bypass buggy physics calculations
+    return;
+
     uint32_t N = sim->num_bodies;
     Body *bodies = sim->bodies;
 
     for (uint32_t i = 0; i < N; i++)
     {
-        break;
+        Body *body_this = &sim->bodies[i];
 
-        Body *body = &sim->bodies[i];
-
-        float acceleration[3] = {0.0f, 0.0f, 0.0f};
+        float acceleration[3] = {0, 0, 0};
 
         for (uint32_t j = 0; j < N; j++)
         {
@@ -192,13 +195,14 @@ void SimulateOrbitalSimStep(OrbitalSim *sim, float time_step)
                 acceleration[1] += force * ry / bodies[j].mass;
                 acceleration[2] += force * rz / bodies[j].mass;
 
-                body->position[0] += body->velocity[0] * time_step;
-                body->position[1] += body->velocity[1] * time_step;
-                body->position[2] += body->velocity[2] * time_step;
+                // Numerical integration: Euler's method
+                body_this->velocity[0] += acceleration[0] * time_step;
+                body_this->velocity[1] += acceleration[1] * time_step;
+                body_this->velocity[2] += acceleration[2] * time_step;
 
-                body->velocity[0] += acceleration[0] * time_step;
-                body->velocity[1] += acceleration[1] * time_step;
-                body->velocity[2] += acceleration[2] * time_step;
+                body_this->position[0] += body_this->velocity[0] * time_step;
+                body_this->position[1] += body_this->velocity[1] * time_step;
+                body_this->position[2] += body_this->velocity[2] * time_step;
             }
         }
     }

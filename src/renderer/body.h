@@ -1,7 +1,7 @@
 /**
  * SPACESIM!
  * Orbital body rendering module
- * 
+ *
  * @author The glitched engineers
  */
 
@@ -13,18 +13,28 @@
 #include "raylib.h"
 
 /**
- * @brief Loads orbital body rendering resources (sphere mesh + textures).
+ * @brief Loads orbital body rendering resources, such as models and textures.
  */
-void ConstructOrbitalBodyRenderer();
+void LoadOrbitalBodyRenderer();
 
 /**
- * @brief Unloads orbital body rendering resources.
+ * @brief Unloads orbital body rendering resources to free memory.
  */
-void DestroyOrbitalBodyRenderer();
+void UnloadOrbitalBodyRenderer();
+
+/**
+ * @brief Retrieves the position of an orbital body in render coordinates.
+ *
+ * @param sim Pointer to the orbital simulation state.
+ * @param body_index Index of the body to retrieve the position for.
+ *
+ * @return A Vector3 representing the position of the body in render coordinates.
+ */
+Vector3 GetOrbitalBodyPosition(const OrbitalSim *sim, uint32_t body_index);
 
 /**
  * @brief Draws a single orbital body using raylib.
- * 
+ *
  * @param camera The camera to use for rendering.
  * @param sim Pointer to the orbital simulation state.
  * @param body_index Index of the body to draw.

@@ -15,27 +15,28 @@
 #include <cmath>
 #include <cstdlib>
 
-#define SPHERE_RINGS 64
-#define SPHERE_SLICES 64
+#define SPHERE_RINGS 32
+#define SPHERE_SLICES 32
 
 #define MINIMUM_PIXEL_RADIUS 2.0f
 
-#define MASSIVE_BODIES_COUNT 10
-
 #define TRAIL_LENGTH 500 // Number of trail points per body
 
-static const char *massive_bodies_textures[MASSIVE_BODIES_COUNT] = {
+static const char *massive_bodies_textures[] = {
+    "resources/textures/ship.png",
     "resources/textures/2k_sun.png",
     "resources/textures/2k_mercury.png",
     "resources/textures/2k_venus.png",
     "resources/textures/2k_earth.png",
+    "resources/textures/2k_moon.png",
     "resources/textures/2k_mars.png",
     "resources/textures/2k_jupiter.png",
     "resources/textures/2k_saturn.png",
     "resources/textures/2k_uranus.png",
     "resources/textures/2k_neptune.png",
-    "resources/textures/2k_moon.png",
 };
+
+#define MASSIVE_BODIES_COUNT (sizeof(massive_bodies_textures) / sizeof(massive_bodies_textures[0]))
 
 #if defined(MATERIAL_MAP_ALBEDO)
 #define ORBITAL_BODY_TEXTURE_MAP MATERIAL_MAP_ALBEDO
@@ -55,8 +56,17 @@ typedef struct
     int trail_count[MASSIVE_BODIES_COUNT];
 } OrbitalBodyRenderCache;
 
-static OrbitalBodyRenderCache body_render_cache = {0};
+static OrbitalBodyRenderCache body_render_cache;
 
+/**
+ * @brief Generates a UV sphere mesh with texture coordinates suitable for equirectangular mapping.
+ * 
+ * @param radius The radius of the sphere.
+ * @param rings The number of horizontal rings (latitude divisions).
+ * @param slices The number of vertical slices (longitude divisions).
+ * 
+ * @return A Mesh struct containing the generated sphere mesh data, ready to be uploaded to the GPU.
+ */
 static Mesh GenMeshSphereEquirectangular(float radius, int rings, int slices)
 {
     Mesh mesh = {0};
@@ -134,22 +144,7 @@ static Mesh GenMeshSphereEquirectangular(float radius, int rings, int slices)
     return mesh;
 }
 
-static Color ComputeFallbackBodyColor(float mass)
-{
-    float solar_mass = 1.989e30f; // Solar mass for scaling
-
-    // Simple mass-based coloring: low mass → cyan, high mass → orange/red
-    float normalized_mass = (solar_mass > 0.0f) ? mass / solar_mass : 0.5f;
-    normalized_mass = Clamp(normalized_mass, 0.0f, 1.0f);
-
-    unsigned char red = (unsigned char)(255 * normalized_mass);
-    unsigned char green = (unsigned char)(180 * (1.0f - normalized_mass * 0.4f));
-    unsigned char blue = (unsigned char)(220 * (1.0f - normalized_mass));
-
-    return Color{red, green, blue, 255};
-}
-
-void ConstructOrbitalBodyRenderer()
+void LoadOrbitalBodyRenderer()
 {
     body_render_cache.unit_sphere_model = LoadModelFromMesh(GenMeshSphereEquirectangular(1.0f, SPHERE_RINGS, SPHERE_SLICES));
 
@@ -170,7 +165,7 @@ void ConstructOrbitalBodyRenderer()
     }
 }
 
-void DestroyOrbitalBodyRenderer()
+void UnloadOrbitalBodyRenderer()
 {
     for (uint32_t i = 0; i < MASSIVE_BODIES_COUNT; i++)
         UnloadTexture(body_render_cache.massive_body_textures[i]);
@@ -179,21 +174,27 @@ void DestroyOrbitalBodyRenderer()
     UnloadModel(body_render_cache.unit_sphere_model);
 }
 
+Vector3 GetOrbitalBodyPosition(const OrbitalSim *sim, uint32_t body_index)
+{
+    const Body *body = &sim->bodies[body_index];
+    return Vector3{
+        (float)(body->position[0] * RENDER_SCALE),
+        (float)(body->position[2] * RENDER_SCALE),
+        (float)(body->position[1] * RENDER_SCALE)};
+}
+
 void DrawOrbitalBody(Camera3D *camera, const OrbitalSim *sim, uint32_t body_index)
 {
     const Body *body = &sim->bodies[body_index];
 
     // Convert to render coordinates
-    Vector3 render_pos = {
-        body->position[0] * RENDER_SCALE,
-        body->position[2] * RENDER_SCALE,
-        body->position[1] * RENDER_SCALE};
+    Vector3 position = GetOrbitalBodyPosition(sim, body_index);
 
     if (body_index < MASSIVE_BODIES_COUNT)
     {
         // Update trail with current position
         int trail_idx = body_render_cache.trail_index[body_index];
-        body_render_cache.trails[body_index][trail_idx] = render_pos;
+        body_render_cache.trails[body_index][trail_idx] = position;
         body_render_cache.trail_index[body_index] = (trail_idx + 1) % TRAIL_LENGTH;
         if (body_render_cache.trail_count[body_index] < TRAIL_LENGTH)
             body_render_cache.trail_count[body_index]++;
@@ -221,10 +222,10 @@ void DrawOrbitalBody(Camera3D *camera, const OrbitalSim *sim, uint32_t body_inde
         float render_radius = body->mean_radius * RENDER_SCALE;
 
         // Ensure minimum visible size for distant bodies
-        float cam_distance = Vector3Distance(camera->position, render_pos);
-        if (cam_distance > 0.0f)
+        float distance_to_camera = Vector3Distance(camera->position, position);
+        if (distance_to_camera > 0.0f)
         {
-            float pixel_factor = (0.5f * WINDOW_WIDTH / cam_distance);
+            float pixel_factor = (0.5f * WINDOW_WIDTH / distance_to_camera);
             float pixel_radius = render_radius * pixel_factor;
             if (pixel_radius < MINIMUM_PIXEL_RADIUS)
                 render_radius = MINIMUM_PIXEL_RADIUS / pixel_factor;
@@ -237,7 +238,7 @@ void DrawOrbitalBody(Camera3D *camera, const OrbitalSim *sim, uint32_t body_inde
         // Render sphere with one-sided culling
         DrawModelEx(
             body_render_cache.unit_sphere_model,
-            render_pos,
+            position,
             Vector3{0.0f, 1.0f, 0.0f},
             0.0f,
             Vector3{render_radius, render_radius, render_radius},
@@ -248,13 +249,13 @@ void DrawOrbitalBody(Camera3D *camera, const OrbitalSim *sim, uint32_t body_inde
 
     // Draw small bodies as 1x1 pixel billboard sprite with alpha blending
     // Calculate world-space size to ensure minimum screen-space size
-    float cam_distance = Vector3Distance(camera->position, render_pos);
-    float pixel_factor = (0.25f * WINDOW_WIDTH / cam_distance);
-    float billboard_size = (cam_distance > 0.0f)
+    float distance_to_camera = Vector3Distance(camera->position, position);
+    float pixel_factor = (0.5f * WINDOW_WIDTH / distance_to_camera);
+    float billboard_size = (distance_to_camera > 0.0f)
                                ? MINIMUM_PIXEL_RADIUS / pixel_factor
                                : 1.0f;
 
-    // WHITE at 50% opacity
-    Color sprite_color = {255, 255, 255, 127};
-    DrawBillboard(*camera, body_render_cache.point_sprite, render_pos, billboard_size, sprite_color);
+    // WHITE with 30% opacity
+    Color billboard_color = {255, 255, 255, 76};
+    DrawBillboard(*camera, body_render_cache.point_sprite, position, billboard_size, billboard_color);
 }

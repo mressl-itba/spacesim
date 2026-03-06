@@ -17,8 +17,10 @@ struct Body
 {
     float mass;        // Mass in kilograms
     float mean_radius; // Mean radius in meters (for visualization)
+
     float position[3]; // Position in meters (x, y, z)
     float velocity[3]; // Velocity in meters per second (vx, vy, vz)
+    float temp[3];
 };
 
 /**
@@ -29,7 +31,7 @@ struct OrbitalSim
     uint32_t num_bodies; // Number of bodies in the simulation
     Body *bodies;        // Dynamically allocated array of bodies
 
-    double time;  // Current simulation time in seconds
+    double time; // Current simulation time in seconds
 };
 
 /**

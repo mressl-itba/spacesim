@@ -1,6 +1,6 @@
 /**
  * SPACESIM!
- * Skysphere loading and rendering module for raylib
+ * Skysphere module for raylib
  *
  * @author The glitched engineers
  */
@@ -14,6 +14,18 @@
 
 #define GLSL_VERSION 330
 
+static Model skysphere_model;
+
+/**
+ * @brief Generates a cubemap texture from a panorama (equirectangular) texture using a shader and framebuffer.
+ * 
+ * @param shader The shader to use for the conversion, it should be a shader that converts equirectangular textures to cubemap textures, it is the caller's responsibility to load and unload the shader.
+ * @param panorama The equirectangular texture to convert, it is the caller's responsibility to load and unload the texture.
+ * @param size The size of the generated cubemap texture, it should be a power of two value (e.g. 512, 1024, 2048), it is the caller's responsibility to choose an appropriate size for the target platform and use case.
+ * @param format The format of the generated cubemap texture, it should be a valid pixel format (e.g. PIXELFORMAT_UNCOMPRESSED_R8G8B8A8), it is the caller's responsibility to choose an appropriate format for the target platform and use case.
+ * 
+ * @return TextureCubemap The generated cubemap texture, it is the caller's responsibility to unload the texture when it is no longer needed.
+ */
 static TextureCubemap GenTextureCubemap(Shader shader, Texture2D panorama, int size, int format)
 {
     TextureCubemap cubemap = {0};
@@ -94,22 +106,22 @@ static TextureCubemap GenTextureCubemap(Shader shader, Texture2D panorama, int s
     return cubemap;
 }
 
-Model LoadSkysphere(const char *texture_path)
+void LoadSkysphere(const char *texture_path)
 {
     // Load skybox model
     Mesh cube = GenMeshCube(1.0f, 1.0f, 1.0f);
-    Model skybox = LoadModelFromMesh(cube);
+    Model skysphere_model = LoadModelFromMesh(cube);
 
     // Load skybox shader and set required locations
-    skybox.materials[0].shader = LoadShader(TextFormat("resources/shaders/glsl%i/skybox.vs", GLSL_VERSION),
-                                            TextFormat("resources/shaders/glsl%i/skybox.fs", GLSL_VERSION));
+    skysphere_model.materials[0].shader = LoadShader(TextFormat("resources/shaders/glsl%i/skybox.vs", GLSL_VERSION),
+                                                     TextFormat("resources/shaders/glsl%i/skybox.fs", GLSL_VERSION));
 
     int environmentMap[] = {MATERIAL_MAP_CUBEMAP};
-    SetShaderValue(skybox.materials[0].shader, GetShaderLocation(skybox.materials[0].shader, "environmentMap"), environmentMap, SHADER_UNIFORM_INT);
+    SetShaderValue(skysphere_model.materials[0].shader, GetShaderLocation(skysphere_model.materials[0].shader, "environmentMap"), environmentMap, SHADER_UNIFORM_INT);
     int doGamma[] = {0};
-    SetShaderValue(skybox.materials[0].shader, GetShaderLocation(skybox.materials[0].shader, "doGamma"), doGamma, SHADER_UNIFORM_INT);
+    SetShaderValue(skysphere_model.materials[0].shader, GetShaderLocation(skysphere_model.materials[0].shader, "doGamma"), doGamma, SHADER_UNIFORM_INT);
     int vflipped[] = {0};
-    SetShaderValue(skybox.materials[0].shader, GetShaderLocation(skybox.materials[0].shader, "vflipped"), vflipped, SHADER_UNIFORM_INT);
+    SetShaderValue(skysphere_model.materials[0].shader, GetShaderLocation(skysphere_model.materials[0].shader, "vflipped"), vflipped, SHADER_UNIFORM_INT);
 
     // Load cubemap shader and setup required shader locations
     Shader shdrCubemap = LoadShader(TextFormat("resources/shaders/glsl%i/cubemap.vs", GLSL_VERSION),
@@ -120,26 +132,24 @@ Model LoadSkysphere(const char *texture_path)
 
     // Load skysphere texture and assign to material
     Texture2D texture = LoadTexture(texture_path);
-    skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture = GenTextureCubemap(shdrCubemap, texture, 1024, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
+    skysphere_model.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture = GenTextureCubemap(shdrCubemap, texture, 1024, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     UnloadTexture(texture);
-
-    return skybox;
 }
 
-void UnloadSkysphere(Model skybox)
+void UnloadSkysphere()
 {
-    UnloadShader(skybox.materials[0].shader);
-    UnloadTexture(skybox.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture);
+    UnloadShader(skysphere_model.materials[0].shader);
+    UnloadTexture(skysphere_model.materials[0].maps[MATERIAL_MAP_CUBEMAP].texture);
 
-    UnloadModel(skybox);
+    UnloadModel(skysphere_model);
 }
 
-void DrawSkysphere(const Model *skysphere)
+void DrawSkysphere()
 {
     // We are inside the cube, we need to disable backface culling!
     rlDisableBackfaceCulling();
     rlDisableDepthMask();
-    DrawModel(*skysphere, Vector3{0, 0, 0}, 1.0f, WHITE);
+    DrawModel(skysphere_model, Vector3{0, 0, 0}, 1.0f, WHITE);
     rlEnableBackfaceCulling();
     rlEnableDepthMask();
 }

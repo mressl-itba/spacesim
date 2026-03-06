@@ -13,41 +13,31 @@
 #include "raylib.h"
 
 /**
- * @brief Structure representing an orbital camera, which allows for smooth movement and zooming around a target point in 3D space.
+ * @brief Sets the camera's position and target.
+ * 
+ * @param camera_position The desired position of the camera in world space.
+ * @param camera_target The desired target point that the camera should look at in world space.
  */
-struct OrbitalCamera
-{
-    Camera3D camera; // The underlying Camera3D structure from raylib
-
-    Vector3 movement; // Movement velocity along forward, right, and up axes for smooth movement
-
-    Vector3 rotation; // Rotation angles around right (pitch), up (yaw), and forward (roll) axes for smooth rotation
-};
+void SetOrbitalCameraPositionAndTarget(Vector3 camera_position, Vector3 camera_target);
 
 /**
- * @brief Creates and initializes a Camera3D structure for orbital visualization.
+ * @brief Converts a relative velocity vector in the camera's local space to an absolute velocity vector in world space.
  * 
- * @param position The initial position of the camera in 3D space.
- * @param target The initial target point that the camera looks at in 3D space.
- * 
- * @return Pointer to the newly created OrbitalCamera structure.
- */
-OrbitalCamera *CreateOrbitalCamera(Vector3 position, Vector3 target);
+ * @param camera Pointer to the Camera3D structure representing the camera.
+ * @param relative_velocity A Vector3 representing the velocity in the camera's local space, where x is right, y is up, and z is forward.
 
-/**
- * @brief Destroys and cleans up any resources associated with the orbital camera.
- * 
- * @param camera Pointer to the OrbitalCamera structure to destroy.
+ * @return A Vector3 representing the absolute velocity in world space.
  */
-void DestroyOrbitalCamera(OrbitalCamera *camera);
+Vector3 GetAbsoluteVelocity(Camera3D *camera, Vector3 relative_velocity);
 
 /**
  * @brief Updates the orbital camera's position and orientation based on user input and elapsed time.
  *
- * @param camera Pointer to the OrbitalCamera structure to update.
+ * @param camera Pointer to the Camera3D structure representing the camera to update.
  * @param delta_time Time elapsed since the last frame (in seconds), used for smooth movement and rotation.
- * @param velocity The base velocity for camera movement, which can be modified by user input (e.g., holding Shift for speed boost).
+ * @param position_delta The desired change in position for the camera, which will be smoothed over time.
+ * @param rotation_delta The desired change in rotation (pitch and yaw) for the camera, which will be smoothed over time.
  */
-void UpdateOrbitalCamera(OrbitalCamera *camera, float delta_time, float velocity);
+void UpdateOrbitalCamera(Camera3D *camera, float delta_time, Vector3 position_delta, Vector2 rotation_delta);
 
 #endif // ORBITAL_CAMERA_H_
