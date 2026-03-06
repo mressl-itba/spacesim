@@ -129,7 +129,7 @@ Una vez que comprendas el código, realiza las siguientes tareas:
   
     * Δv total empleado
     * Trayectorias (gráficos si es posible)
-    * Tiempo y magnitud de cada maniobra
+    * Instante y magnitud de cada maniobra
     * Dificultades encontradas y soluciones
 
 ## Recomendaciones
