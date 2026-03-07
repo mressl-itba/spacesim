@@ -105,7 +105,7 @@ Una vez que comprendas el código, realiza las siguientes tareas:
 * **Verifica y valida** el simulador:
 
   * Investiga requisitos realistas de precisión para aterrizaje en Marte (referencias actuales: misión Perseverance, misiones humanas).
-  * Utiliza las efemérides `2028-12-31_00-00-00.csv` como estado inicial del sistema solar. Determina el tipo de datos numérico más adecuado (precisión de punto flotante) y el time step óptimo, validando tus resultados contra las efemérides de referencia `2029-08-28_00_00_00.csv`. Considera sólo el Sol, los ocho planetas y la Luna. Implementa el código correspondiente en el módulo `physics/mission`.
+  * Determina el tipo de datos numérico más adecuado (precisión de punto flotante) y el time step óptimo. Utiliza las efemérides `2028-12-31_00-00-00.csv` como estado inicial del sistema solar, y valida los resultados de tu simulación comparándolos con las efemérides de referencia `2029-08-28_00_00_00.csv`, considerando sólo el Sol, los ocho planetas y la Luna. Implementa el código correspondiente en el módulo `physics/mission`.
   * Opcional (con bonus points): Investiga y compara métodos de integración numérica avanzados (RK4, Adams-Bashforth, symplectic, etc.). Elige y justifica el más adecuado para este problema.
   * Documenta todo en `ENTREGA.md`.
 
@@ -134,7 +134,7 @@ Una vez que comprendas el código, realiza las siguientes tareas:
 
 ## Recomendaciones
 
-* Los ingenieros glitcheados utilizaron el estilo de programación [Google C++](https://google.github.io/styleguide/cppguide.html) con comentarios [Doxygen](https://www.doxygen.nl/manual/docblocks.html). Úsalos tú también.
+* Los ingenieros glitcheados siguieron la guía de estilo [Google C++](https://google.github.io/styleguide/cppguide.html), con comentarios en formato [Doxygen](https://www.doxygen.nl/manual/docblocks.html). Hazlo tú también.
 * Usa **Git** y commitea de forma frecuente y con mensajes claros. Si necesitas ayuda: [Learn GitHub within GitHub](https://learn.github.com/skills)
 * No modifiques los archivos `sim_visualizer.c`, `sim_headless.c` ni la carpeta `renderer/`.
 * No modifiques los archivos de efemérides.
