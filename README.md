@@ -117,7 +117,7 @@ Una vez que comprendas el código, realiza las siguientes tareas:
   * Opcional (con bonus points): Considera la seguridad y evita que la nave pase peligrosamente cerca de asteroides.
   * Documenta todo en `ENTREGA.md`.
 
-* **Diseña y simula** una misión a marte simplificada, partiendo de la órbita inicial de la nave:
+* **Diseña y simula** una misión a Marte simplificada, partiendo de la órbita inicial de la nave:
 
   * Implementa tu misión en el módulo `physics/mission`.
   * Lanza alrededor del 31 de diciembre de 2028.
