@@ -66,7 +66,7 @@ static OrbitalRenderer orbital_renderer;
 void LoadOrbitalRenderer(OrbitalSim *sim)
 {
     // Initialize window and OpenGL context
-    SetTraceLogLevel(LOG_ERROR);
+    // SetTraceLogLevel(LOG_ERROR);
     InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
     SetWindowState(FLAG_VSYNC_HINT);
     SetTargetFPS(TARGET_FPS);
@@ -247,7 +247,7 @@ static void DrawOrbitalRenderer()
     // 3D scene
     BeginMode3D(orbital_renderer.camera);
 
-    DrawSkysphere();
+    DrawSkysphere(orbital_renderer.camera.position);
 
     DrawOrbitalGrid(50, GRID_SPACING * RENDER_SCALE);
 

@@ -18,7 +18,7 @@ Año 2028. Un misterioso glitch cuántico ha borrado del mapa a **todos** los in
 
 2. Instala Git → <https://git-scm.com/downloads>
 
-3. Instala [vcpkg](https://vcpkg.io/) (gestor de paquetes de C++).
+3. Instala [vcpkg](https://vcpkg.io/) (gestor de paquetes de C++) y la biblioteca `raylib`:
 
     **Windows**
 
@@ -28,6 +28,7 @@ Año 2028. Un misterioso glitch cuántico ha borrado del mapa a **todos** los in
     git clone https://github.com/Microsoft/vcpkg.git
     .\vcpkg\bootstrap-vcpkg.bat
     .\vcpkg\vcpkg integrate install
+    .\vcpkg\vcpkg install raylib
     ```
 
     **Linux/macOS**
@@ -38,6 +39,7 @@ Año 2028. Un misterioso glitch cuántico ha borrado del mapa a **todos** los in
     git clone https://github.com/Microsoft/vcpkg.git
     ./vcpkg/bootstrap-vcpkg.sh
     ./vcpkg/vcpkg integrate install
+    ./vcpkg/vcpkg install raylib
     ```
 
 4. Los ingenieros glitcheados dejaron sólo este repositorio. Ábrelo en Visual Studio, y compila y ejecuta los targets `sim_visualizer` (visualización 3D interactiva, útil para debugging visual) y `sim_headless` (simulación sin gráficos, para mediciones rápidas).

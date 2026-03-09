@@ -25,6 +25,6 @@ void UnloadSkysphere();
 /**
  * @brief Draws the skysphere centered on the camera position.
  */
-void DrawSkysphere();
+void DrawSkysphere(Vector3 camera_position);
 
 #endif // SKYSPHERE_H_

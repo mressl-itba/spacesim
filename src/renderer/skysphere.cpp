@@ -110,7 +110,7 @@ void LoadSkysphere(const char *texture_path)
 {
     // Load skybox model
     Mesh cube = GenMeshCube(1.0f, 1.0f, 1.0f);
-    Model skysphere_model = LoadModelFromMesh(cube);
+    skysphere_model = LoadModelFromMesh(cube);
 
     // Load skybox shader and set required locations
     skysphere_model.materials[0].shader = LoadShader(TextFormat("resources/shaders/glsl%i/skybox.vs", GLSL_VERSION),
@@ -144,12 +144,12 @@ void UnloadSkysphere()
     UnloadModel(skysphere_model);
 }
 
-void DrawSkysphere()
+void DrawSkysphere(Vector3 camera_position)
 {
     // We are inside the cube, we need to disable backface culling!
     rlDisableBackfaceCulling();
     rlDisableDepthMask();
-    DrawModel(skysphere_model, Vector3{0, 0, 0}, 1.0f, WHITE);
+    DrawModel(skysphere_model, camera_position, 1.0f, WHITE);
     rlEnableBackfaceCulling();
     rlEnableDepthMask();
 }
